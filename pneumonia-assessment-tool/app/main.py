@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Add the project root to the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import streamlit as st
 from iris_integration.iris_connection import initialize_database, load_xray_data, load_symptom_data
 from pages import home,assessment,results,education

@@ -10,12 +10,12 @@ def app():
     # File uploader for X-ray image
     uploaded_file = upload_xray()
     
-    # Symptom selection
+    # Symptom selection from the database
     engine = get_db_connection()
     all_symptoms = get_all_symptoms(engine)  # Fetch symptoms from the database
     
     if all_symptoms:
-        selected_symptoms = get_symptoms(all_symptoms)  # Pass available symptoms to the selection function
+        selected_symptoms = get_symptoms(all_symptoms)
     else:
         st.error("No symptoms data found in the database.")
 
@@ -26,7 +26,10 @@ def app():
             st.error("Please select at least one symptom.")
         else:
             with st.spinner("Processing..."):
+                # Process the uploaded X-ray
                 xray_features = process_xray(uploaded_file)
+                
+                # Process the selected symptoms
                 symptom_features = process_symptoms(selected_symptoms)
                 
                 # Store results in session state for the Results page

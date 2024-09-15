@@ -83,29 +83,27 @@ def load_xray_data(xray_base_path):
     print("X-ray data loaded successfully.")
 
 def load_symptom_data(csv_path):
-    """
-    Load symptoms data from a CSV file into the database.
-    
-    :param csv_path: Path to the CSV file containing symptoms data.
-    """
-    df = pd.read_csv(csv_path)  # Load the CSV file into a Pandas DataFrame
-    
+    df = pd.read_csv(csv_path)
+    symptom_columns = [col for col in df.columns if col.startswith('symptom')]
+    df['combined_symptoms'] = df[symptom_columns].apply(lambda row: ', '.join(row.dropna()), axis=1)
+
     engine = get_db_connection()
     
     with engine.connect() as conn:
         with conn.begin():
             for _, row in df.iterrows():
-                # Insert each row into the symptom_data table
                 sql = text("""
                     INSERT INTO symptom_data (symptoms, feature_vector)
                     VALUES (:symptoms, :feature_vector)
                 """)
                 conn.execute(sql, {
-                    'symptoms': row['symptoms'],
-                    'feature_vector': '[]'  # Use an empty list or encode the vector if needed
+                    'symptoms': row['combined_symptoms'],
+                    'feature_vector': '[]'
                 })
-
+                print(f"Inserted symptoms: {row['combined_symptoms']}")
+    
     print("Symptom data loaded successfully.")
+
 
 def initialize_database():
     """

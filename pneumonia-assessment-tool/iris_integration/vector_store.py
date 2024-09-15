@@ -51,14 +51,23 @@ def process_symptoms(symptoms):
 
 def get_all_symptoms(engine):
     """
-    Get all unique symptoms from the database.
-    
-    :param engine: Database engine
-    :return: List of symptoms
+    Retrieve symptoms related to the disease 'Pneumonia' from the symptom_data table.
     """
     with engine.connect() as conn:
-        result = conn.execute(text("SELECT DISTINCT symptoms FROM symptom_data")).fetchall()
-    return [symptom for (symptom,) in result]
+        result = conn.execute(text("""
+            SELECT DISTINCT symptoms 
+            FROM symptom_data 
+            WHERE disease = 'Pneumonia'
+        """)).fetchall()
+    
+    # Convert the results into a list of strings
+    symptoms = [row[0] for row in result]
+    
+    print("Pneumonia-related symptoms from DB:", symptoms)  # Debugging: print the symptoms
+    
+    return symptoms
+
+
 
 def store_xray_vector(image_path, diagnosis, feature_vector):
     """
