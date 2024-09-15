@@ -1,13 +1,14 @@
 import streamlit as st
 
+import streamlit as st
+
 def get_symptoms(available_symptoms):
     """
     Display a multi-select input for selecting symptoms from the available symptoms list.
-    Allow users to input additional symptoms.
     """
     symptoms = st.multiselect(
         'Select your symptoms',
-        available_symptoms,  # Pass the list of symptoms fetched from the database
+        available_symptoms,  # Pass the distinct list of symptoms fetched from the database
         []
     )
     

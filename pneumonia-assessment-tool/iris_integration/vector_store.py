@@ -51,21 +51,27 @@ def process_symptoms(symptoms):
 
 def get_all_symptoms(engine):
     """
-    Retrieve symptoms related to the disease 'Pneumonia' from the symptom_data table.
+    Retrieve distinct symptoms related to the disease 'Pneumonia' from the symptom_data table.
+    The symptoms will be split and deduplicated into individual entries.
     """
     with engine.connect() as conn:
+        # Fetch all symptom strings where the disease is 'Pneumonia'
         result = conn.execute(text("""
             SELECT DISTINCT symptoms 
             FROM symptom_data 
             WHERE disease = 'Pneumonia'
         """)).fetchall()
+
+    # Extract individual symptoms, deduplicate, and return as a list
+    all_symptoms = set()
+    for row in result:
+        symptoms = row[0].split(', ')  # Split the concatenated string of symptoms
+        all_symptoms.update(symptoms)  # Add each symptom to the set to ensure uniqueness
     
-    # Convert the results into a list of strings
-    symptoms = [row[0] for row in result]
-    
-    print("Pneumonia-related symptoms from DB:", symptoms)  # Debugging: print the symptoms
-    
-    return symptoms
+    # Convert the set to a sorted list for easier selection in the dropdown
+    return sorted(all_symptoms)
+
+
 
 
 

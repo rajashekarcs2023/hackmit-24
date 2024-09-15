@@ -12,10 +12,10 @@ def app():
     
     # Symptom selection from the database
     engine = get_db_connection()
-    all_symptoms = get_all_symptoms(engine)  # Fetch symptoms from the database
+    all_symptoms = get_all_symptoms(engine)  # Fetch individual symptoms related to "Pneumonia"
     
     if all_symptoms:
-        selected_symptoms = get_symptoms(all_symptoms)
+        selected_symptoms = get_symptoms(all_symptoms)  # Display the distinct symptoms in the dropdown
     else:
         st.error("No symptoms data found in the database.")
 

@@ -33,9 +33,13 @@ def create_tables(engine):
                 )
             """))
             # Create table for symptom data
+            conn.execute(text("DROP TABLE IF EXISTS symptom_data"))
+            
+            # Create table for symptom data with a disease column
             conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS symptom_data (
+                CREATE TABLE symptom_data (
                     id INT AUTO_INCREMENT PRIMARY KEY,
+                    disease VARCHAR(255),
                     symptoms TEXT,
                     feature_vector TEXT
                 )
@@ -84,25 +88,28 @@ def load_xray_data(xray_base_path):
 
 def load_symptom_data(csv_path):
     df = pd.read_csv(csv_path)
-    symptom_columns = [col for col in df.columns if col.startswith('symptom')]
+
+    # Combine all symptom columns into a single string for each row, ignoring empty symptoms
+    symptom_columns = [col for col in df.columns if col.startswith('Symptom')]
     df['combined_symptoms'] = df[symptom_columns].apply(lambda row: ', '.join(row.dropna()), axis=1)
 
     engine = get_db_connection()
-    
+
     with engine.connect() as conn:
         with conn.begin():
             for _, row in df.iterrows():
                 sql = text("""
-                    INSERT INTO symptom_data (symptoms, feature_vector)
-                    VALUES (:symptoms, :feature_vector)
+                    INSERT INTO symptom_data (disease, symptoms, feature_vector)
+                    VALUES (:disease, :symptoms, :feature_vector)
                 """)
                 conn.execute(sql, {
-                    'symptoms': row['combined_symptoms'],
-                    'feature_vector': '[]'
+                    'disease': row['Disease'],  # Insert disease from the dataset
+                    'symptoms': row['combined_symptoms'],  # Insert combined symptoms
+                    'feature_vector': '[]'  # Empty feature vector
                 })
-                print(f"Inserted symptoms: {row['combined_symptoms']}")
-    
+
     print("Symptom data loaded successfully.")
+
 
 
 def initialize_database():
