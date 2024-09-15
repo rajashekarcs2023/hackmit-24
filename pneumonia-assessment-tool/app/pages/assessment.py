@@ -1,22 +1,37 @@
 import streamlit as st
-from components import xray_upload, symptom_input
+from components.xray_upload import upload_xray
+from components.symptom_input import get_symptoms
+from iris_integration.vector_store import process_xray, process_symptoms, get_all_symptoms
+from iris_integration.iris_connection import get_db_connection
 
 def app():
-    st.title('Pneumonia Assessment')
+    st.title("Pneumonia Assessment")
+
+    # File uploader for X-ray image
+    uploaded_file = upload_xray()
     
-    col1, col2 = st.columns(2)
+    # Symptom selection
+    engine = get_db_connection()
+    all_symptoms = get_all_symptoms(engine)  # Fetch symptoms from the database
     
-    with col1:
-        uploaded_file = xray_upload.upload_xray()
-    
-    with col2:
-        symptoms = symptom_input.get_symptoms()
-    
-    if uploaded_file and symptoms:
-        if st.button('Analyze'):
-            # Here you would typically call your backend analysis function
-            # For now, we'll just set a flag in the session state
-            st.session_state['analysis_complete'] = True
-            st.success('Analysis complete! View results in the Results page.')
+    if all_symptoms:
+        selected_symptoms = get_symptoms(all_symptoms)  # Pass available symptoms to the selection function
     else:
-        st.warning('Please upload an X-ray and enter symptoms to proceed.')
+        st.error("No symptoms data found in the database.")
+
+    if st.button("Assess"):
+        if uploaded_file is None:
+            st.error("Please upload an X-ray image.")
+        elif not selected_symptoms:
+            st.error("Please select at least one symptom.")
+        else:
+            with st.spinner("Processing..."):
+                xray_features = process_xray(uploaded_file)
+                symptom_features = process_symptoms(selected_symptoms)
+                
+                # Store results in session state for the Results page
+                st.session_state['xray_features'] = xray_features
+                st.session_state['symptom_features'] = symptom_features
+                st.session_state['selected_symptoms'] = selected_symptoms
+                
+                st.success("Assessment complete! Please go to the Results page.")
