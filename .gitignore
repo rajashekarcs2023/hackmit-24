@@ -1,0 +1,18 @@
+# Virtual Environment
+pneumonia_env/
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Large data directories
+
+
+# IDE specific
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
